@@ -1,48 +1,46 @@
-#!/usr/bin/env bash
-#is a challenge
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+import sys
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+def factorize(number):
+    def gcd(a, b):
+        while b != 0:
+            a, b = b, a % b
+        return a
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
+    def pollard_rho(n):
+        if n % 2 == 0:
+            return 2
 
-        echo "$num$num1*$num2"
-}
+        x = 2
+        y = 2
+        d = 1
 
-if [ $# -ne 1 ]
-then
-        echo 'Usage: rsa <file>'
-        exit 1
-else
+        f = lambda x: (x**2 + 1) % n
 
-        while read i
-        do
+        while d == 1:
+            x = f(x)
+            y = f(f(y))
+            d = gcd(abs(x - y), n)
 
-                result=$(factor "$i")
-                check_factor $result
+        return d
 
-        done < "$1"
-fi
+    factors = []
+
+    while number > 1:
+        factor = pollard_rho(number)
+        factors.append(factor)
+        number //= factor
+
+    return factors
+
+def main():
+    filename = sys.argv[1]
+    
+    with open(filename, 'r') as file:
+        number = int(file.readline().strip())
+
+    factors = factorize(number)
+    result = f"{number}=" + "*".join(str(factor) for factor in factors)
+    print(result)
+
+if __name__ == '__main__':
+    main()

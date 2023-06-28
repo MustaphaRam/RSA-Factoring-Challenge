@@ -1,49 +1,24 @@
-#!/usr/bin/env bash
-# is a factors challenge
+import sys
 
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+def factorize(number):
+    factors = []
+    for i in range(2, int(number ** 0.5) + 1):
+        while number % i == 0:
+            factors.append(i)
+            number //= i
+    if number > 1:
+        factors.append(number)
+    return factors
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+def main():
+    filename = sys.argv[1]
+    with open(filename, 'r') as file:
+        numbers = [int(line.strip()) for line in file]
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
+    for number in numbers:
+        factors = factorize(number)
+        result = f"{number}=" + "*".join(str(factor) for factor in factors)
+        print(result)
 
-        echo "$num$num1*$num2"
-}
-
-if [ $# -ne 1 ]
-then
-        echo 'Usage: factors <file>'
-        exit 1
-else
-
-        while read i
-        do
-
-                result=$(factor "$i")
-                check_factor $result
-
-        done < "$1"
-fi
+if __name__ == '__main__':
+    main()
